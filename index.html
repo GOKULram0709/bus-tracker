@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: rgba(168,85,247,0.18);
+        }
+        .box {
+            background: white;
+            padding: 20px;
+            margin: 16px auto;
+            border-radius: 10px;
+            position: relative;
+            max-width: 500px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        h1 { font-size: 1.4rem; padding: 0 10px; }
+        button {
+            padding: 12px 20px;
+            width: 100%;
+            font-size: 1rem;
+            border-radius: 8px;
+        }
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 100px;
+            border: 1px solid #bbf7d0;
+            position: absolute;
+            top: 14px;
+            right: 16px;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: blink 1.2s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.3; transform: scale(0.6); }
+        }
+        .live-time {
+            display: inline-block;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 100px;
+            border: 1px solid #bfdbfe;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>College Bus Tracking System</h1>
+
+<div class="box">
+    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+    <h2>Bus 1</h2>
+    <p><span class="live-time">🕐 <span id="clock1">--:--:--</span></span></p>
+    <p style="font-size:0.8rem; color:#666; margin: 4px 0 10px;">
+        🗺️ Vandalur → Perungalathur → Irumbuliyur → Camp Road → Medavakkam → Jeppiaar University
+    </p>
+    <p id="location">📍 Location: Not Started</p>
+    <p id="stop-counter1" style="font-size:0.78rem; color:#888;"></p>
+    <button onclick="updateLocation()" id="btn1">▶ Start Tracking</button>
+</div>
+
+<div class="box">
+    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+    <h2>Bus 2</h2>
+    <p><span class="live-time">🕐 <span id="clock2">--:--:--</span></span></p>
+    <p style="font-size:0.8rem; color:#666; margin: 4px 0 10px;">
+        🗺️ GH Hospital Chengalpattu → Thiruporur → Sholinganallur → OMR Road → Jeppiaar University
+    </p>
+    <p id="location2">📍 Location: Not Started</p>
+    <p id="stop-counter" style="font-size:0.78rem; color:#888;"></p>
+    <button onclick="updateLocation2()" id="btn2">▶ Start Tracking</button>
+</div>
+
+<script>
+const bus1Stops = [
+    "🌳 Vandalur",
+    "🛣️ Perungalathur",
+    "🏘️ Irumbuliyur",
+    "🚦 Camp Road",
+    "🏥 Medavakkam",
+    "🎓 Jeppiaar University"
+];
+let bus1Step = 0;
+
+function updateLocation() {
+    if (bus1Step < bus1Stops.length) {
+        document.getElementById("location").innerHTML = "📍 Location: " + bus1Stops[bus1Step];
+        document.getElementById("stop-counter1").innerHTML =
+            "Stop " + (bus1Step + 1) + " of " + bus1Stops.length;
+        bus1Step++;
+        if (bus1Step === bus1Stops.length) {
+            document.getElementById("btn1").innerHTML = "✅ Arrived";
+            document.getElementById("btn1").disabled = true;
+            document.getElementById("btn1").style.background = "#16a34a";
+        } else {
+            document.getElementById("btn1").innerHTML = "⏩ Next Stop";
+        }
+    }
+}
+
+const bus2Stops = [
+    "🏥 GH Hospital, Chengalpattu",
+    "🛣️ Thiruporur",
+    "🏘️ Sholinganallur",
+    "🚦 OMR Road",
+    "🎓 Jeppiaar University / Jeppiaar Engineering College"
+];
+let bus2Step = 0;
+
+function updateLocation2() {
+    if (bus2Step < bus2Stops.length) {
+        document.getElementById("location2").innerHTML = "📍 Location: " + bus2Stops[bus2Step];
+        document.getElementById("stop-counter").innerHTML =
+            "Stop " + (bus2Step + 1) + " of " + bus2Stops.length;
+        bus2Step++;
+        if (bus2Step === bus2Stops.length) {
+            document.getElementById("btn2").innerHTML = "✅ Arrived";
+            document.getElementById("btn2").disabled = true;
+            document.getElementById("btn2").style.background = "#16a34a";
+        } else {
+            document.getElementById("btn2").innerHTML = "⏩ Next Stop";
+        }
+    }
+}
+
+// Live clock for both buses
+function updateClocks() {
+    const now = new Date();
+    const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('clock1').textContent = time;
+    document.getElementById('clock2').textContent = time;
+}
+setInterval(updateClocks, 1000);
+updateClocks();
+</script>
+
+</body>
+</html>
