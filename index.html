@@ -12,51 +12,71 @@
             text-align: center;
             min-height: 100vh;
             margin: 0;
-            color: #1e1e2e;
+            color: #1e293b;
             letter-spacing: 0.01em;
-            background: linear-gradient(135deg, #e0f2fe, #bae6fd, #7dd3fc, #38bdf8, #0ea5e9);
-            background-size: 400% 400%;
-            animation: skyShift 2s ease infinite;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 40%, #f8fafc 70%, #dbeafe 100%);
+            background-size: 300% 300%;
+            animation: businessShift 8s ease-in-out infinite;
             position: relative;
             overflow-x: hidden;
         }
-        @keyframes skyShift {
-            0%   { background-position: 0% 50%; }
-            50%  { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        @keyframes businessShift {
+            0%   { background-position: 0% 0%; }
+            50%  { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
         }
-        /* Floating orbs */
-        body::before, body::after {
-            content: '';
+        /* Canvas for particles */
+        #bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Soft glow orbs */
+        .orb {
             position: fixed;
             border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.35;
+            filter: blur(100px);
+            opacity: 0.18;
             pointer-events: none;
             z-index: 0;
         }
-        body::before {
-            width: 500px; height: 500px;
+        .orb-1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, #93c5fd, #1d4ed8);
+            top: -200px; left: -150px;
+            animation: orbFloat1 14s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 450px; height: 450px;
             background: radial-gradient(circle, #bae6fd, #0284c7);
-            top: -100px; left: -100px;
-            animation: floatOrb1 12s ease-in-out infinite;
+            bottom: -150px; right: -100px;
+            animation: orbFloat2 18s ease-in-out infinite;
         }
-        body::after {
-            width: 400px; height: 400px;
+        .orb-3 {
+            width: 300px; height: 300px;
             background: radial-gradient(circle, #e0f2fe, #0369a1);
-            bottom: -80px; right: -80px;
-            animation: floatOrb2 15s ease-in-out infinite;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: orbFloat3 22s ease-in-out infinite;
         }
-        @keyframes floatOrb1 {
-            0%,100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(60px, 80px) scale(1.15); }
+        @keyframes orbFloat1 {
+            0%,100% { transform: translate(0,0); }
+            33%      { transform: translate(40px, 60px); }
+            66%      { transform: translate(-20px, 30px); }
         }
-        @keyframes floatOrb2 {
-            0%,100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(-50px, -60px) scale(1.1); }
+        @keyframes orbFloat2 {
+            0%,100% { transform: translate(0,0); }
+            33%      { transform: translate(-50px,-40px); }
+            66%      { transform: translate(20px,-60px); }
         }
-        /* Ensure content stays above orbs */
-        h1, p, .box, .subtitle { position: relative; z-index: 1; }
+        @keyframes orbFloat3 {
+            0%,100% { transform: translate(-50%,-50%) scale(1); }
+            50%      { transform: translate(-50%,-50%) scale(1.3); }
+        }
+        /* Content above background */
+        h1, p, .box, .subtitle, button { position: relative; z-index: 1; }
         .box {
             background: white;
             padding: 20px;
@@ -149,6 +169,11 @@
 
 <body>
 
+<canvas id="bg-canvas"></canvas>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
 <h1>Jeppiaar Bus Monitoring System</h1>
 <p class="subtitle">🎓 Live Route Tracking — Jeppiaar University</p>
 
@@ -237,6 +262,58 @@ function updateClocks() {
 }
 setInterval(updateClocks, 1000);
 updateClocks();
+
+// Professional particle background
+(function() {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    for (let i = 0; i < 55; i++) {
+        particles.push({
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            r: Math.random() * 2.5 + 0.5,
+            dx: (Math.random() - 0.5) * 0.4,
+            dy: (Math.random() - 0.5) * 0.4,
+            alpha: Math.random() * 0.4 + 0.1
+        });
+    }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(14, 116, 189, ${p.alpha})`;
+            ctx.fill();
+            p.x += p.dx;
+            p.y += p.dy;
+            if (p.x < 0 || p.x > canvas.width)  p.dx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+        });
+        // Draw subtle connecting lines
+        particles.forEach((a, i) => {
+            particles.slice(i + 1).forEach(b => {
+                const dist = Math.hypot(a.x - b.x, a.y - b.y);
+                if (dist < 120) {
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y);
+                    ctx.lineTo(b.x, b.y);
+                    ctx.strokeStyle = `rgba(14, 116, 189, ${0.08 * (1 - dist / 120)})`;
+                    ctx.lineWidth = 0.6;
+                    ctx.stroke();
+                }
+            });
+        });
+        requestAnimationFrame(draw);
+    }
+    draw();
+})();
 </script>
 
 </body>
