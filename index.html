@@ -1,320 +1,620 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Jeppiaar Bus Monitoring System</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Live bus tracking for Jeppiaar University routes">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
             font-family: 'Inter', sans-serif;
-            text-align: center;
             min-height: 100vh;
-            margin: 0;
-            color: #1e293b;
-            letter-spacing: 0.01em;
             background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 40%, #f8fafc 70%, #dbeafe 100%);
             background-size: 300% 300%;
-            animation: businessShift 8s ease-in-out infinite;
-            position: relative;
+            animation: bgShift 8s ease-in-out infinite;
+            color: #1e293b;
             overflow-x: hidden;
         }
-        @keyframes businessShift {
+
+        @keyframes bgShift {
             0%   { background-position: 0% 0%; }
             50%  { background-position: 100% 100%; }
             100% { background-position: 0% 0%; }
         }
-        /* Canvas for particles */
-        #bg-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 0;
-            pointer-events: none;
+
+        canvas#bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        .orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.15; pointer-events: none; z-index: 0; }
+        .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #93c5fd, #1d4ed8); top: -150px; left: -120px; animation: o1 14s ease-in-out infinite; }
+        .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #bae6fd, #0284c7); bottom: -120px; right: -80px; animation: o2 18s ease-in-out infinite; }
+        @keyframes o1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(50px,70px)} }
+        @keyframes o2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-40px,-50px)} }
+
+        /* ── Page layout ── */
+        .page { position: relative; z-index: 1; max-width: 560px; margin: 0 auto; padding: 0 16px 80px; }
+
+        /* ── Header ── */
+        .header {
+            text-align: center;
+            padding: 32px 0 20px;
         }
-        /* Soft glow orbs */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.18;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .orb-1 {
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, #93c5fd, #1d4ed8);
-            top: -200px; left: -150px;
-            animation: orbFloat1 14s ease-in-out infinite;
-        }
-        .orb-2 {
-            width: 450px; height: 450px;
-            background: radial-gradient(circle, #bae6fd, #0284c7);
-            bottom: -150px; right: -100px;
-            animation: orbFloat2 18s ease-in-out infinite;
-        }
-        .orb-3 {
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, #e0f2fe, #0369a1);
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbFloat3 22s ease-in-out infinite;
-        }
-        @keyframes orbFloat1 {
-            0%,100% { transform: translate(0,0); }
-            33%      { transform: translate(40px, 60px); }
-            66%      { transform: translate(-20px, 30px); }
-        }
-        @keyframes orbFloat2 {
-            0%,100% { transform: translate(0,0); }
-            33%      { transform: translate(-50px,-40px); }
-            66%      { transform: translate(20px,-60px); }
-        }
-        @keyframes orbFloat3 {
-            0%,100% { transform: translate(-50%,-50%) scale(1); }
-            50%      { transform: translate(-50%,-50%) scale(1.3); }
-        }
-        /* Content above background */
-        h1, p, .box, .subtitle, button { position: relative; z-index: 1; }
-        .box {
-            background: white;
-            padding: 20px;
-            margin: 16px auto;
-            border-radius: 10px;
-            position: relative;
-            max-width: 500px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-        }
-        h1 {
+        .header h1 {
             font-family: 'Poppins', sans-serif;
-            font-size: 1.75rem;
+            font-size: 1.6rem;
             font-weight: 800;
-            padding: 20px 10px 4px;
-            letter-spacing: -0.8px;
-            background: linear-gradient(135deg, #3b0764, #7c3aed, #2563eb);
+            background: linear-gradient(135deg, #1d4ed8, #0284c7, #0ea5e9);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
         }
-        .subtitle {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.82rem;
-            color: #7c3aed;
+        .header .subtitle {
+            font-size: 0.78rem;
+            color: #0284c7;
             font-weight: 500;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 24px;
+            margin-top: 6px;
         }
-        h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #3b0764;
-            margin-bottom: 4px;
-        }
-        p {
-            font-family: 'Inter', sans-serif;
-            font-size: 0.92rem;
-            color: #444;
-        }
-        button {
-            padding: 12px 20px;
-            width: 100%;
-            font-size: 0.95rem;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            border-radius: 8px;
-            letter-spacing: 0.3px;
-        }
-        .live-badge {
+        .live-indicator {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #dcfce7;
-            color: #16a34a;
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 100px;
-            border: 1px solid #bbf7d0;
-            position: absolute;
-            top: 14px;
-            right: 16px;
-        }
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #16a34a;
-            border-radius: 50%;
-            animation: blink 1.2s ease-in-out infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50%       { opacity: 0.3; transform: scale(0.6); }
-        }
-        .live-time {
-            display: inline-block;
-            background: #eff6ff;
-            color: #1d4ed8;
-            font-size: 0.78rem;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #059669;
+            font-size: 0.72rem;
             font-weight: 600;
-            padding: 3px 10px;
+            padding: 4px 12px;
             border-radius: 100px;
-            border: 1px solid #bfdbfe;
-            margin-bottom: 10px;
+            margin-top: 10px;
         }
+        .live-dot { width: 7px; height: 7px; background: #10b981; border-radius: 50%; animation: blink 1.2s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
+
+        /* ── Clock bar ── */
+        .clock-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(14,116,189,0.15);
+            border-radius: 100px;
+            padding: 7px 18px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #0369a1;
+            margin: 12px auto 24px;
+            width: fit-content;
+        }
+
+        /* ── Bus card ── */
+        .bus-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(14,116,189,0.15);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 24px rgba(14,116,189,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .bus-card:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(14,116,189,0.15); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid rgba(14,116,189,0.08);
+        }
+        .bus-title { display: flex; align-items: center; gap: 12px; }
+        .bus-icon {
+            width: 44px; height: 44px; border-radius: 12px;
+            display: grid; place-items: center; font-size: 22px;
+        }
+        .bus-1 .bus-icon { background: linear-gradient(135deg,#dbeafe,#bfdbfe); }
+        .bus-2 .bus-icon { background: linear-gradient(135deg,#dcfce7,#bbf7d0); }
+        .bus-name { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700; color: #1e3a5f; }
+        .bus-route-label { font-size: 0.7rem; color: #64748b; margin-top: 1px; }
+
+        .live-badge {
+            display: flex; align-items: center; gap: 5px;
+            background: #dcfce7; color: #15803d;
+            font-size: 0.7rem; font-weight: 700;
+            padding: 4px 10px; border-radius: 100px;
+            border: 1px solid #bbf7d0;
+        }
+
+        .card-body { padding: 16px 20px; }
+
+        .route-strip {
+            font-size: 0.75rem;
+            color: #475569;
+            background: rgba(14,116,189,0.05);
+            border: 1px solid rgba(14,116,189,0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 14px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .time-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #eff6ff; border: 1px solid #bfdbfe;
+            color: #1d4ed8; font-size: 0.75rem; font-weight: 600;
+            padding: 4px 12px; border-radius: 100px;
+            margin-bottom: 14px;
+        }
+
+        /* ── Track button ── */
+        .track-btn {
+            width: 100%;
+            padding: 13px;
+            border: none; cursor: pointer;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem; font-weight: 700;
+            letter-spacing: 0.3px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .bus-1 .track-btn { background: linear-gradient(135deg,#1d4ed8,#0284c7); color: white; box-shadow: 0 4px 16px rgba(29,78,216,0.3); }
+        .bus-2 .track-btn { background: linear-gradient(135deg,#059669,#0d9488); color: white; box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
+        .track-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
+        .track-btn:active { transform: scale(0.98); }
+
+        /* ── Tracking Panel (modal-style) ── */
+        .tracking-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.55);
+            backdrop-filter: blur(6px);
+            z-index: 100;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .tracking-overlay.open { display: flex; }
+
+        .tracking-panel {
+            width: 100%; max-width: 560px;
+            background: #ffffff;
+            border-radius: 28px 28px 0 0;
+            padding: 0 0 32px;
+            box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+            animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+        @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+
+        .panel-handle {
+            width: 40px; height: 4px;
+            background: #cbd5e1; border-radius: 2px;
+            margin: 12px auto 0;
+        }
+
+        .panel-header {
+            padding: 16px 20px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .panel-bus-info h3 { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700; color: #1e3a5f; }
+        .panel-bus-info p  { font-size: 0.72rem; color: #64748b; margin-top: 2px; }
+
+        .panel-close {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: #f1f5f9; border: none; cursor: pointer;
+            font-size: 16px; display: grid; place-items: center;
+            transition: background 0.2s;
+        }
+        .panel-close:hover { background: #e2e8f0; }
+
+        /* ── Status bar ── */
+        .status-bar {
+            display: grid; grid-template-columns: repeat(3,1fr);
+            gap: 10px; padding: 14px 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .status-chip {
+            text-align: center;
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 10px; padding: 10px 8px;
+        }
+        .status-chip .label { font-size: 0.65rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
+        .status-chip .value { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 700; color: #1e3a5f; margin-top: 2px; }
+
+        /* ── Route timeline ── */
+        .route-timeline { padding: 8px 20px 16px; }
+        .timeline-title {
+            font-size: 0.7rem; font-weight: 600; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 10px 0 12px;
+        }
+
+        .stop-row {
+            display: flex; align-items: stretch;
+            gap: 0; margin: 0;
+        }
+
+        .stop-left {
+            display: flex; flex-direction: column; align-items: center;
+            width: 48px; flex-shrink: 0;
+        }
+
+        .stop-dot-wrap {
+            position: relative; z-index: 1;
+            display: flex; align-items: center; justify-content: center;
+            width: 26px; height: 26px; flex-shrink: 0;
+        }
+
+        .stop-dot {
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 2.5px solid #cbd5e1; background: white;
+            transition: all 0.4s;
+        }
+        .stop-dot.done  { background: #10b981; border-color: #10b981; }
+        .stop-dot.here  {
+            background: #1d4ed8; border-color: #1d4ed8;
+            box-shadow: 0 0 0 4px rgba(29,78,216,0.2);
+            animation: herePulse 1.2s ease-in-out infinite;
+        }
+        .bus-2-panel .stop-dot.here { background: #059669; border-color: #059669; box-shadow: 0 0 0 4px rgba(5,150,105,0.2); }
+        @keyframes herePulse { 0%,100%{box-shadow:0 0 0 4px rgba(29,78,216,0.2)} 50%{box-shadow:0 0 0 8px rgba(29,78,216,0.08)} }
+
+        .stop-line {
+            width: 2px; flex: 1; min-height: 32px;
+            background: #e2e8f0;
+            margin: 0;
+            transition: background 0.4s;
+        }
+        .stop-line.done { background: #10b981; }
+
+        .stop-content {
+            flex: 1;
+            padding: 2px 0 20px 12px;
+        }
+
+        .stop-name {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem; font-weight: 600; color: #334155;
+            transition: color 0.3s;
+        }
+        .stop-name.done { color: #10b981; }
+        .stop-name.here { color: #1d4ed8; }
+        .bus-2-panel .stop-name.here { color: #059669; }
+
+        .stop-meta {
+            display: flex; align-items: center; gap: 10px;
+            margin-top: 4px;
+        }
+        .stop-meta span {
+            font-size: 0.68rem; color: #94a3b8;
+            display: flex; align-items: center; gap: 3px;
+        }
+        .stop-time {
+            font-size: 0.72rem !important; font-weight: 600 !important;
+            color: #475569 !important;
+        }
+        .here-tag {
+            background: #dbeafe; color: #1d4ed8;
+            font-size: 0.62rem; font-weight: 700;
+            padding: 2px 8px; border-radius: 100px;
+        }
+        .bus-2-panel .here-tag { background: #dcfce7; color: #059669; }
+        .done-check { color: #10b981 !important; font-size: 0.75rem !important; }
+
+        /* ── Next stop button inside panel ── */
+        .panel-action {
+            padding: 0 20px;
+            position: sticky; bottom: 0;
+            background: linear-gradient(to top, white 80%, transparent);
+            padding-top: 16px;
+        }
+        .next-btn {
+            width: 100%; padding: 14px;
+            border: none; cursor: pointer;
+            border-radius: 14px;
+            font-family: 'Poppins', sans-serif; font-size: 0.95rem; font-weight: 700;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s;
+        }
+        .bus-1-panel .next-btn { background: linear-gradient(135deg,#1d4ed8,#0284c7); color: white; box-shadow: 0 4px 16px rgba(29,78,216,0.3); }
+        .bus-2-panel .next-btn { background: linear-gradient(135deg,#059669,#0d9488); color: white; box-shadow: 0 4px 16px rgba(5,150,105,0.3); }
+        .next-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .next-btn:disabled { background: #e2e8f0; color: #94a3b8; box-shadow: none; cursor: default; transform: none; }
     </style>
 </head>
-
 <body>
 
-<canvas id="bg-canvas"></canvas>
+<canvas id="bg"></canvas>
 <div class="orb orb-1"></div>
 <div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
 
-<h1>Jeppiaar Bus Monitoring System</h1>
-<p class="subtitle">🎓 Live Route Tracking — Jeppiaar University</p>
+<div class="page">
 
-<div class="box">
-    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
-    <h2>Bus 1</h2>
-    <p><span class="live-time">🕐 <span id="clock1">--:--:--</span></span></p>
-    <p style="font-size:0.8rem; color:#666; margin: 4px 0 10px;">
-        🗺️ Vandalur → Perungalathur → Irumbuliyur → Camp Road → Medavakkam → Jeppiaar University
-    </p>
-    <p id="location">📍 Location: Not Started</p>
-    <p id="stop-counter1" style="font-size:0.78rem; color:#888;"></p>
-    <button onclick="updateLocation()" id="btn1">▶ Start Tracking</button>
+    <!-- Header -->
+    <div class="header">
+        <h1>🚌 Jeppiaar Bus<br>Monitoring System</h1>
+        <p class="subtitle">🎓 Live Route Tracking — Jeppiaar University</p>
+        <div class="live-indicator"><span class="live-dot"></span> LIVE TRACKING</div>
+    </div>
+
+    <!-- Clock bar -->
+    <div class="clock-bar">🕐 <span id="main-clock">--:--:--</span></div>
+
+    <!-- Bus 1 -->
+    <div class="bus-card bus-1">
+        <div class="card-header">
+            <div class="bus-title">
+                <div class="bus-icon">🚌</div>
+                <div>
+                    <div class="bus-name">Bus 1</div>
+                    <div class="bus-route-label">Vandalur → Jeppiaar University</div>
+                </div>
+            </div>
+            <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+        </div>
+        <div class="card-body">
+            <div class="route-strip">
+                🗺️ Vandalur → Perungalathur → Irumbuliyur → Camp Road → Medavakkam → Jeppiaar University
+            </div>
+            <div class="time-chip">🕐 <span id="clock1">--:--:--</span></div>
+            <button class="track-btn" onclick="openTracking(1)">
+                <span>📡</span><span id="btn1-text">Start Tracking</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bus 2 -->
+    <div class="bus-card bus-2">
+        <div class="card-header">
+            <div class="bus-title">
+                <div class="bus-icon">🚍</div>
+                <div>
+                    <div class="bus-name">Bus 2</div>
+                    <div class="bus-route-label">GH Hospital, Chengalpattu → Jeppiaar University</div>
+                </div>
+            </div>
+            <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+        </div>
+        <div class="card-body">
+            <div class="route-strip">
+                🗺️ GH Hospital Chengalpattu → Thiruporur → Sholinganallur → OMR Road → Jeppiaar University
+            </div>
+            <div class="time-chip">🕐 <span id="clock2">--:--:--</span></div>
+            <button class="track-btn" onclick="openTracking(2)">
+                <span>📡</span><span id="btn2-text">Start Tracking</span>
+            </button>
+        </div>
+    </div>
+
 </div>
 
-<div class="box">
-    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
-    <h2>Bus 2</h2>
-    <p><span class="live-time">🕐 <span id="clock2">--:--:--</span></span></p>
-    <p style="font-size:0.8rem; color:#666; margin: 4px 0 10px;">
-        🗺️ GH Hospital Chengalpattu → Thiruporur → Sholinganallur → OMR Road → Jeppiaar University
-    </p>
-    <p id="location2">📍 Location: Not Started</p>
-    <p id="stop-counter" style="font-size:0.78rem; color:#888;"></p>
-    <button onclick="updateLocation2()" id="btn2">▶ Start Tracking</button>
+<!-- ── Tracking Panel Bus 1 ── -->
+<div class="tracking-overlay" id="overlay1">
+    <div class="tracking-panel bus-1-panel">
+        <div class="panel-handle"></div>
+        <div class="panel-header">
+            <div class="panel-bus-info">
+                <h3>🚌 Bus 1 — Live Tracking</h3>
+                <p>Vandalur → Jeppiaar University</p>
+            </div>
+            <button class="panel-close" onclick="closeTracking(1)">✕</button>
+        </div>
+        <div class="status-bar" id="statusbar1"></div>
+        <div class="route-timeline">
+            <div class="timeline-title">Route Stops</div>
+            <div id="timeline1"></div>
+        </div>
+        <div class="panel-action">
+            <button class="next-btn" id="nextbtn1" onclick="nextStop(1)">⏩ Next Stop</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Tracking Panel Bus 2 ── -->
+<div class="tracking-overlay" id="overlay2">
+    <div class="tracking-panel bus-2-panel">
+        <div class="panel-handle"></div>
+        <div class="panel-header">
+            <div class="panel-bus-info">
+                <h3>🚍 Bus 2 — Live Tracking</h3>
+                <p>GH Hospital, Chengalpattu → Jeppiaar University</p>
+            </div>
+            <button class="panel-close" onclick="closeTracking(2)">✕</button>
+        </div>
+        <div class="status-bar" id="statusbar2"></div>
+        <div class="route-timeline">
+            <div class="timeline-title">Route Stops</div>
+            <div id="timeline2"></div>
+        </div>
+        <div class="panel-action">
+            <button class="next-btn" id="nextbtn2" onclick="nextStop(2)">⏩ Next Stop</button>
+        </div>
+    </div>
 </div>
 
 <script>
-const bus1Stops = [
-    "🌳 Vandalur",
-    "🛣️ Perungalathur",
-    "🏘️ Irumbuliyur",
-    "🚦 Camp Road",
-    "🏥 Medavakkam",
-    "🎓 Jeppiaar University"
-];
-let bus1Step = 0;
-
-function updateLocation() {
-    if (bus1Step < bus1Stops.length) {
-        document.getElementById("location").innerHTML = "📍 Location: " + bus1Stops[bus1Step];
-        document.getElementById("stop-counter1").innerHTML =
-            "Stop " + (bus1Step + 1) + " of " + bus1Stops.length;
-        bus1Step++;
-        if (bus1Step === bus1Stops.length) {
-            document.getElementById("btn1").innerHTML = "✅ Arrived";
-            document.getElementById("btn1").disabled = true;
-            document.getElementById("btn1").style.background = "#16a34a";
-        } else {
-            document.getElementById("btn1").innerHTML = "⏩ Next Stop";
-        }
+// ── Bus data ────────────────────────────────────────────────
+const busData = {
+    1: {
+        stops: [
+            { name: 'Vandalur',         dist: '0 km',  emoji: '🌳' },
+            { name: 'Perungalathur',    dist: '5 km',  emoji: '🛣️' },
+            { name: 'Irumbuliyur',      dist: '10 km', emoji: '🏘️' },
+            { name: 'Camp Road',        dist: '15 km', emoji: '🚦' },
+            { name: 'Medavakkam',       dist: '22 km', emoji: '🏥' },
+            { name: 'Jeppiaar University', dist: '28 km', emoji: '🎓' }
+        ],
+        current: 0,
+        travelMins: [0, 12, 20, 30, 42, 55]
+    },
+    2: {
+        stops: [
+            { name: 'GH Hospital, Chengalpattu', dist: '0 km',  emoji: '🏥' },
+            { name: 'Thiruporur',                dist: '18 km', emoji: '🛣️' },
+            { name: 'Sholinganallur',            dist: '30 km', emoji: '🏙️' },
+            { name: 'OMR Road',                  dist: '36 km', emoji: '🚦' },
+            { name: 'Jeppiaar University',       dist: '42 km', emoji: '🎓' }
+        ],
+        current: 0,
+        travelMins: [0, 25, 45, 55, 70]
     }
+};
+
+// ── Clock ──────────────────────────────────────────────────
+function getTime() {
+    return new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
-
-const bus2Stops = [
-    "🏥 GH Hospital, Chengalpattu",
-    "🛣️ Thiruporur",
-    "🏘️ Sholinganallur",
-    "🚦 OMR Road",
-    "🎓 Jeppiaar University"
-];
-let bus2Step = 0;
-
-function updateLocation2() {
-    if (bus2Step < bus2Stops.length) {
-        document.getElementById("location2").innerHTML = "📍 Location: " + bus2Stops[bus2Step];
-        document.getElementById("stop-counter").innerHTML =
-            "Stop " + (bus2Step + 1) + " of " + bus2Stops.length;
-        bus2Step++;
-        if (bus2Step === bus2Stops.length) {
-            document.getElementById("btn2").innerHTML = "✅ Arrived";
-            document.getElementById("btn2").disabled = true;
-            document.getElementById("btn2").style.background = "#16a34a";
-        } else {
-            document.getElementById("btn2").innerHTML = "⏩ Next Stop";
-        }
-    }
+function getTimeAt(addMins) {
+    const d = new Date(Date.now() + addMins * 60000);
+    return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
-
-// Live clock for both buses
 function updateClocks() {
-    const now = new Date();
-    const time = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('clock1').textContent = time;
-    document.getElementById('clock2').textContent = time;
+    const t = getTime();
+    ['main-clock','clock1','clock2'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = t;
+    });
 }
 setInterval(updateClocks, 1000);
 updateClocks();
 
-// Professional particle background
-(function() {
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    function resize() {
-        canvas.width  = window.innerWidth;
-        canvas.height = window.innerHeight;
+// ── Render timeline ────────────────────────────────────────
+function renderTimeline(busNum) {
+    const bus   = busData[busNum];
+    const stops = bus.stops;
+    const curr  = bus.current;
+    const el    = document.getElementById('timeline' + busNum);
+
+    el.innerHTML = stops.map((stop, i) => {
+        let dotCls  = '';
+        let nameCls = '';
+        let lineCls = '';
+        let tag     = '';
+        let extra   = '';
+
+        if (i < curr)  { dotCls = 'done'; nameCls = 'done'; lineCls = 'done'; extra = '<span class="done-check">✓ Passed</span>'; }
+        if (i === curr) { dotCls = 'here'; nameCls = 'here'; tag = '<span class="here-tag">🔵 Bus is here</span>'; }
+
+        const isLast = i === stops.length - 1;
+        const minOffset = (bus.travelMins[i] || 0) - (bus.travelMins[curr] || 0);
+        const showEta = i > curr ? `<span>⏱ ETA: ${getTimeAt(minOffset)}</span>` : '';
+
+        return `
+        <div class="stop-row">
+            <div class="stop-left">
+                <div class="stop-dot-wrap">
+                    <div class="stop-dot ${dotCls}"></div>
+                </div>
+                ${!isLast ? `<div class="stop-line ${lineCls}"></div>` : ''}
+            </div>
+            <div class="stop-content">
+                <div class="stop-name ${nameCls}">${stop.emoji} ${stop.name}</div>
+                <div class="stop-meta">
+                    <span>📍 ${stop.dist}</span>
+                    ${showEta}
+                    ${tag}
+                    ${extra}
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    // Status bar
+    const curr_stop = stops[curr];
+    const next_stop = stops[curr + 1];
+    const remainStops = stops.length - 1 - curr;
+    const etaMins = bus.travelMins[stops.length - 1] - (bus.travelMins[curr] || 0);
+
+    document.getElementById('statusbar' + busNum).innerHTML = `
+        <div class="status-chip">
+            <div class="label">Current Stop</div>
+            <div class="value" style="font-size:0.7rem">${curr_stop.emoji} ${curr_stop.name.split(',')[0]}</div>
+        </div>
+        <div class="status-chip">
+            <div class="label">Stops Left</div>
+            <div class="value">${remainStops}</div>
+        </div>
+        <div class="status-chip">
+            <div class="label">ETA to College</div>
+            <div class="value" style="font-size:0.82rem">${curr === stops.length-1 ? '✅ Here' : getTimeAt(etaMins)}</div>
+        </div>`;
+}
+
+// ── Open / close panel ─────────────────────────────────────
+function openTracking(busNum) {
+    renderTimeline(busNum);
+    document.getElementById('overlay' + busNum).classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTracking(busNum) {
+    document.getElementById('overlay' + busNum).classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+// Close on overlay click
+document.getElementById('overlay1').addEventListener('click', function(e) { if(e.target===this) closeTracking(1); });
+document.getElementById('overlay2').addEventListener('click', function(e) { if(e.target===this) closeTracking(2); });
+
+// ── Next stop ──────────────────────────────────────────────
+function nextStop(busNum) {
+    const bus = busData[busNum];
+    if (bus.current < bus.stops.length - 1) {
+        bus.current++;
+        renderTimeline(busNum);
+        // Scroll active stop into view
+        const rows = document.querySelectorAll('#timeline' + busNum + ' .stop-row');
+        if (rows[bus.current]) rows[bus.current].scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    if (bus.current === bus.stops.length - 1) {
+        const btn = document.getElementById('nextbtn' + busNum);
+        btn.disabled = true;
+        btn.innerHTML = '✅ Arrived at Jeppiaar University!';
+    }
+}
+
+// ── Particle background ────────────────────────────────────
+(function() {
+    const c = document.getElementById('bg');
+    const ctx = c.getContext('2d');
+    let pts = [];
+    function resize() { c.width = innerWidth; c.height = innerHeight; }
     resize();
     window.addEventListener('resize', resize);
-    for (let i = 0; i < 55; i++) {
-        particles.push({
-            x: Math.random() * window.innerWidth,
-            y: Math.random() * window.innerHeight,
-            r: Math.random() * 2.5 + 0.5,
-            dx: (Math.random() - 0.5) * 0.4,
-            dy: (Math.random() - 0.5) * 0.4,
-            alpha: Math.random() * 0.4 + 0.1
-        });
+    for (let i = 0; i < 50; i++) {
+        pts.push({ x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+            r: Math.random()*2+0.5, dx: (Math.random()-.5)*.35, dy: (Math.random()-.5)*.35,
+            a: Math.random()*.35+0.08 });
     }
     function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        particles.forEach(p => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(14, 116, 189, ${p.alpha})`;
-            ctx.fill();
-            p.x += p.dx;
-            p.y += p.dy;
-            if (p.x < 0 || p.x > canvas.width)  p.dx *= -1;
-            if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+        ctx.clearRect(0,0,c.width,c.height);
+        pts.forEach(p => {
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+            ctx.fillStyle=`rgba(14,116,189,${p.a})`; ctx.fill();
+            p.x+=p.dx; p.y+=p.dy;
+            if(p.x<0||p.x>c.width) p.dx*=-1;
+            if(p.y<0||p.y>c.height) p.dy*=-1;
         });
-        // Draw subtle connecting lines
-        particles.forEach((a, i) => {
-            particles.slice(i + 1).forEach(b => {
-                const dist = Math.hypot(a.x - b.x, a.y - b.y);
-                if (dist < 120) {
-                    ctx.beginPath();
-                    ctx.moveTo(a.x, a.y);
-                    ctx.lineTo(b.x, b.y);
-                    ctx.strokeStyle = `rgba(14, 116, 189, ${0.08 * (1 - dist / 120)})`;
-                    ctx.lineWidth = 0.6;
-                    ctx.stroke();
-                }
-            });
-        });
+        pts.forEach((a,i) => pts.slice(i+1).forEach(b => {
+            const d = Math.hypot(a.x-b.x,a.y-b.y);
+            if(d<110){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+                ctx.strokeStyle=`rgba(14,116,189,${0.07*(1-d/110)})`; ctx.lineWidth=0.5; ctx.stroke(); }
+        }));
         requestAnimationFrame(draw);
     }
     draw();
 })();
 </script>
-
 </body>
 </html>
