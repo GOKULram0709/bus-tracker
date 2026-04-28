@@ -10,10 +10,53 @@
         body {
             font-family: 'Inter', sans-serif;
             text-align: center;
-            background: rgba(168,85,247,0.18);
+            min-height: 100vh;
+            margin: 0;
             color: #1e1e2e;
             letter-spacing: 0.01em;
+            background: linear-gradient(135deg, #e0f2fe, #bae6fd, #7dd3fc, #38bdf8, #0ea5e9);
+            background-size: 400% 400%;
+            animation: skyShift 10s ease infinite;
+            position: relative;
+            overflow-x: hidden;
         }
+        @keyframes skyShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        /* Floating orbs */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.35;
+            pointer-events: none;
+            z-index: 0;
+        }
+        body::before {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, #bae6fd, #0284c7);
+            top: -100px; left: -100px;
+            animation: floatOrb1 12s ease-in-out infinite;
+        }
+        body::after {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #e0f2fe, #0369a1);
+            bottom: -80px; right: -80px;
+            animation: floatOrb2 15s ease-in-out infinite;
+        }
+        @keyframes floatOrb1 {
+            0%,100% { transform: translate(0, 0) scale(1); }
+            50%      { transform: translate(60px, 80px) scale(1.15); }
+        }
+        @keyframes floatOrb2 {
+            0%,100% { transform: translate(0, 0) scale(1); }
+            50%      { transform: translate(-50px, -60px) scale(1.1); }
+        }
+        /* Ensure content stays above orbs */
+        h1, p, .box, .subtitle { position: relative; z-index: 1; }
         .box {
             background: white;
             padding: 20px;
