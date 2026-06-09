@@ -330,6 +330,31 @@
         .bus-4-panel .here-tag { background: #fdf2f8; color: #db2777; }
         .bus-3-panel .next-btn { background: linear-gradient(135deg,#ca8a04,#a16207); color: white; box-shadow: 0 4px 16px rgba(202,138,4,0.3); }
         .bus-4-panel .next-btn { background: linear-gradient(135deg,#db2777,#be185d); color: white; box-shadow: 0 4px 16px rgba(219,39,119,0.3); }
+        /* ── Search & Dark Mode ── */
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-input { width: 100%; padding: 14px 18px 14px 44px; border: 1px solid #cbd5e1; border-radius: 14px; font-family: 'Inter', sans-serif; font-size: 0.95rem; outline: none; transition: all 0.2s; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); color: #1e293b; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .search-input:focus { border-color: #1d4ed8; box-shadow: 0 4px 16px rgba(29,78,216,0.15); }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; opacity: 0.5; pointer-events: none; }
+
+        /* Dark Theme overrides */
+        body.dark-theme { background: #0f172a; color: #f8fafc; }
+        .dark-theme .page { color: #f8fafc; }
+        .dark-theme .auth-container, .dark-theme .tracking-panel, .dark-theme .bus-card, .dark-theme .map-wrapper { background: rgba(30,41,59,0.85); border-color: rgba(255,255,255,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        .dark-theme .header h1 { background: linear-gradient(135deg, #60a5fa, #38bdf8, #7dd3fc); -webkit-background-clip: text; }
+        .dark-theme .clock-bar, .dark-theme .tab-nav, .dark-theme .user-bar { background: rgba(30,41,59,0.7); border-color: rgba(255,255,255,0.05); color: #e2e8f0; }
+        .dark-theme .tab-btn { color: #94a3b8; }
+        .dark-theme .bus-name, .dark-theme .popup-title, .dark-theme .auth-title, .dark-theme .panel-bus-info h3, .dark-theme .stop-name, .dark-theme .map-header h3, .dark-theme .curr-stop-name { color: #f8fafc; }
+        .dark-theme .bus-route-label, .dark-theme .auth-sub, .dark-theme .popup-sub, .dark-theme .route-strip, .dark-theme .curr-stop-label, .dark-theme .panel-bus-info p { color: #94a3b8; }
+        .dark-theme .route-strip, .dark-theme .time-chip, .dark-theme .live-badge { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.1); }
+        .dark-theme .card-header, .dark-theme .map-header, .dark-theme .route-info-strip, .dark-theme .panel-header, .dark-theme .status-bar { border-color: rgba(255,255,255,0.05); }
+        .dark-theme .search-input { background: rgba(30,41,59,0.85); color: white; border-color: rgba(255,255,255,0.1); }
+        .dark-theme .bus-sel-btn, .dark-theme .status-chip { background: rgba(0,0,0,0.2); border-color: rgba(255,255,255,0.05); color: #cbd5e1; }
+        .dark-theme .panel-action { background: linear-gradient(to top, #1e293b 80%, transparent); }
+        .dark-theme .stop-dot { border-color: #475569; background: #1e293b; }
+        .dark-theme .stop-line { background: #334155; }
+        .dark-theme .user-avatar { border-color: #1e293b; }
+        .dark-theme .logout-btn { background: rgba(255,255,255,0.05); color: #cbd5e1; }
+        .dark-theme .logout-btn:hover { background: rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -388,6 +413,37 @@
     </div>
 </div>
 
+<!-- ADMIN PANEL VIEW -->
+<div id="view-admin" class="view">
+    <div class="auth-container" style="max-width:500px; margin-top:40px;">
+        <h2 class="auth-title">🛡️ Admin Portal</h2>
+        <p class="auth-sub">Simulated Control Panel</p>
+        
+        <div class="setup-form">
+            <div class="input-group">
+                <label>Broadcast Announcement</label>
+                <input type="text" id="adminAnnounce" placeholder="e.g. Bus 1 is delayed by 10 mins...">
+                <button class="save-btn" onclick="postAnnouncement()" style="margin-top:10px; padding:10px; font-size:0.85rem;">Send Broadcast</button>
+            </div>
+            
+            <div class="input-group" style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(14,116,189,0.1);">
+                <label>Force Delay Simulator</label>
+                <div style="display:flex; gap:10px;">
+                    <select id="adminBusSelect" class="search-input" style="flex:1; padding:12px; width:100%;">
+                        <option value="1">Bus 1</option>
+                        <option value="2">Bus 2</option>
+                        <option value="3">Bus 3</option>
+                        <option value="4">Bus 4</option>
+                    </select>
+                    <button class="save-btn" onclick="simulateDelay()" style="margin-top:0; width:auto; padding:10px 20px;">+15 Min</button>
+                </div>
+            </div>
+            
+            <button class="logout-btn" onclick="showView('view-app')" style="width:100%; margin-top:30px; padding:12px; background:rgba(0,0,0,0.05); text-align:center;">Exit Admin Panel</button>
+        </div>
+    </div>
+</div>
+
 <!-- APP VIEW -->
 <div id="view-app" class="view">
 <div class="page">
@@ -401,14 +457,22 @@
                 <p id="appDept">B.Tech IT</p>
             </div>
         </div>
-        <button class="logout-btn" onclick="logout()">Sign Out</button>
+        <div style="display:flex; gap:8px;">
+            <button class="logout-btn" onclick="toggleDarkMode()" id="darkModeBtn">🌙</button>
+            <button class="logout-btn" onclick="logout()">Sign Out</button>
+        </div>
     </div>
 
     <!-- Header -->
     <div class="header">
-        <h1>🚌 Jeppiaar Bus<br>Monitoring System</h1>
+        <h1 id="headerLogo" style="cursor:pointer; user-select:none;">🚌 Jeppiaar Bus<br>Monitoring System</h1>
         <p class="subtitle">🎓 Live Route Tracking — Jeppiaar University</p>
         <div class="live-indicator"><span class="live-dot"></span> LIVE TRACKING</div>
+    </div>
+
+    <div id="announcementBanner" style="display:none; background:linear-gradient(135deg, #ef4444, #b91c1c); color:white; padding:12px 18px; border-radius:12px; margin-bottom:20px; font-size:0.85rem; font-weight:600; box-shadow:0 4px 12px rgba(239,68,68,0.2); align-items:center; gap:10px;">
+        <span>📢</span> <span id="announcementText" style="flex:1;"></span>
+        <button onclick="document.getElementById('announcementBanner').style.display='none'" style="background:transparent; border:none; color:white; cursor:pointer; opacity:0.8;">✕</button>
     </div>
 
     <!-- Clock bar -->
@@ -426,6 +490,11 @@
 
     <!-- ── BUSES TAB ── -->
     <div class="tab-content active" id="content-buses">
+
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="busSearch" placeholder="Search routes or stops (e.g., Porur)..." onkeyup="filterBuses()">
+        </div>
 
         <!-- Bus 1 -->
         <div class="bus-card bus-1">
@@ -908,6 +977,12 @@ let userProfile = null;
 let currentAvatar = '👨‍🎓';
 
 function checkAuth() {
+    if(localStorage.getItem('jeppiaarBusDark') === 'true') {
+        document.body.classList.add('dark-theme');
+        const btn = document.getElementById('darkModeBtn');
+        if(btn) btn.innerText = '☀️';
+    }
+
     const saved = localStorage.getItem('jeppiaarBusProfile');
     if (saved) {
         userProfile = JSON.parse(saved);
@@ -967,6 +1042,67 @@ function logout() {
 }
 
 document.addEventListener('DOMContentLoaded', checkAuth);
+
+// ── Search Bar ──────────────────────────────────────────────
+function filterBuses() {
+    const q = document.getElementById('busSearch').value.toLowerCase();
+    const cards = document.querySelectorAll('#content-buses .bus-card');
+    cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        if (text.includes(q)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// ── Dark Mode ───────────────────────────────────────────────
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    localStorage.setItem('jeppiaarBusDark', isDark);
+    document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
+    
+    if(leafletMap) {
+        leafletMap.eachLayer(layer => { if(layer instanceof L.TileLayer) leafletMap.removeLayer(layer); });
+        const url = isDark ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png' : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        L.tileLayer(url, { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(leafletMap);
+        if(mapLayers.route) mapLayers.route.bringToFront();
+    }
+}
+
+// ── Admin Panel Simulation ──────────────────────────────────
+let logoClicks = 0;
+document.getElementById('headerLogo').addEventListener('click', () => {
+    logoClicks++;
+    if(logoClicks >= 5) {
+        logoClicks = 0;
+        showView('view-admin');
+    }
+});
+
+function postAnnouncement() {
+    const text = document.getElementById('adminAnnounce').value.trim();
+    if(text) {
+        document.getElementById('announcementText').innerText = text;
+        const banner = document.getElementById('announcementBanner');
+        banner.style.display = 'flex';
+        banner.animate([{opacity:0, transform:'translateY(-10px)'}, {opacity:1, transform:'translateY(0)'}], {duration:300, fill:'forwards'});
+        document.getElementById('adminAnnounce').value = '';
+        alert('Broadcast Sent to all simulated users!');
+    }
+}
+
+function simulateDelay() {
+    const busNum = parseInt(document.getElementById('adminBusSelect').value);
+    const bus = busData[busNum];
+    bus.travelMins = bus.travelMins.map(m => m + 15);
+    alert(`Bus ${busNum} has been delayed by 15 minutes! ETAs updated.`);
+    if (document.getElementById('content-map').classList.contains('active')) {
+        updateMapInfo();
+    }
+}
 
 // ── Particle background ───────────────────────────────────
 (function(){
