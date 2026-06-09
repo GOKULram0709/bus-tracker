@@ -155,21 +155,46 @@
             box-shadow: 0 4px 24px rgba(14,116,189,0.08);
         }
         .map-header {
-            padding: 14px 18px;
+            padding: 14px 18px 10px;
             border-bottom: 1px solid rgba(14,116,189,0.08);
-            display: flex; align-items: center; justify-content: space-between;
-            flex-wrap: wrap; gap: 8px;
         }
         .map-header h3 {
             font-family: 'Poppins', sans-serif; font-size: 0.95rem; font-weight: 700; color: #1e3a5f;
+            margin-bottom: 10px;
         }
-        .map-legend { display: flex; gap: 14px; flex-wrap: wrap; }
-        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.72rem; font-weight: 600; color: #475569; }
-        .legend-line { width: 22px; height: 3px; border-radius: 2px; }
-        .legend-line.b1 { background: #1d4ed8; }
-        .legend-line.b2 { background: #059669; }
+        /* Bus selector inside map */
+        .bus-selector {
+            display: flex; gap: 8px;
+        }
+        .bus-sel-btn {
+            flex: 1; padding: 9px 10px;
+            border-radius: 10px; border: 1.5px solid #e2e8f0;
+            background: #f8fafc; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 0.8rem; font-weight: 600;
+            color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .bus-sel-btn.active-b1 { background: #dbeafe; border-color: #1d4ed8; color: #1d4ed8; }
+        .bus-sel-btn.active-b2 { background: #dcfce7; border-color: #059669; color: #059669; }
+        .bus-sel-btn:hover { transform: translateY(-1px); }
 
-        #map { height: 420px; width: 100%; z-index: 1; }
+        #map { height: 400px; width: 100%; z-index: 1; }
+
+        /* Route info strip under map */
+        .route-info-strip {
+            padding: 12px 18px;
+            border-top: 1px solid rgba(14,116,189,0.08);
+            display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .route-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 12px; border-radius: 100px;
+            font-size: 0.73rem; font-weight: 600;
+        }
+        .route-badge.b1 { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .route-badge.b2 { background: #dcfce7; color: #059669; border: 1px solid #bbf7d0; }
+        .curr-stop-label { font-size: 0.75rem; color: #475569; font-weight: 500; }
+        .curr-stop-name  { font-family: 'Poppins', sans-serif; font-size: 0.85rem; font-weight: 700; color: #1e3a5f; }
 
         .map-info-bar {
             padding: 12px 18px;
@@ -341,27 +366,26 @@
     <div class="tab-content" id="content-map">
         <div class="map-wrapper">
             <div class="map-header">
-                <h3>📍 Live Route Map — Chennai, Tamil Nadu</h3>
-                <div class="map-legend">
-                    <div class="legend-item"><div class="legend-line b1"></div> Bus 1</div>
-                    <div class="legend-item"><div class="legend-line b2"></div> Bus 2</div>
+                <h3>📍 Route Map — Chennai, Tamil Nadu</h3>
+                <div class="bus-selector">
+                    <button class="bus-sel-btn active-b1" id="sel-btn-1" onclick="selectBusMap(1)">
+                        🚌 Bus 1 — Vandalur Route
+                    </button>
+                    <button class="bus-sel-btn" id="sel-btn-2" onclick="selectBusMap(2)">
+                        🚍 Bus 2 — Chengalpattu Route
+                    </button>
                 </div>
             </div>
             <div id="map"></div>
-            <div class="map-info-bar">
-                <div class="map-bus-chip">
-                    <div class="map-bus-dot b1"></div>
-                    <div class="map-bus-chip-text">
-                        <p>Bus 1 — Current Stop</p>
-                        <h4 id="map-bus1-stop">Vandalur</h4>
-                    </div>
+            <div class="route-info-strip" id="route-info-strip">
+                <span class="route-badge b1" id="map-route-badge">🚌 Bus 1</span>
+                <div>
+                    <div class="curr-stop-label">Current Stop</div>
+                    <div class="curr-stop-name" id="map-curr-stop">Vandalur</div>
                 </div>
-                <div class="map-bus-chip">
-                    <div class="map-bus-dot b2"></div>
-                    <div class="map-bus-chip-text">
-                        <p>Bus 2 — Current Stop</p>
-                        <h4 id="map-bus2-stop">GH Hospital, Chengalpattu</h4>
-                    </div>
+                <div style="margin-left:auto; text-align:right">
+                    <div class="curr-stop-label">Stops Remaining</div>
+                    <div class="curr-stop-name" id="map-stops-left">5</div>
                 </div>
             </div>
         </div>
@@ -462,6 +486,7 @@ updateClocks();
 
 // ── Tab switch ────────────────────────────────────────────
 let mapInitialized = false;
+let selectedBusMap = 1;
 function switchTab(tab) {
     ['buses','map'].forEach(t => {
         document.getElementById('content-' + t).classList.toggle('active', t === tab);
@@ -469,86 +494,92 @@ function switchTab(tab) {
     });
     if (tab === 'map' && !mapInitialized) {
         mapInitialized = true;
-        setTimeout(initMap, 100);
+        setTimeout(() => { initMap(); selectBusMap(1); }, 120);
     }
 }
 
 // ── Map ───────────────────────────────────────────────────
-let leafletMap, busMarkers = {};
+let leafletMap;
+let mapLayers = { route: null, stops: [], busMarker: null };
 
 function initMap() {
     leafletMap = L.map('map', { zoomControl: true, scrollWheelZoom: true })
         .setView([12.82, 80.15], 11);
-
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a>',
         maxZoom: 18
     }).addTo(leafletMap);
+}
 
-    // Draw route lines
-    const route1 = busData[1].stops.map(s => s.latlng);
-    const route2 = busData[2].stops.map(s => s.latlng);
+function clearMapLayers() {
+    if (mapLayers.route)     { leafletMap.removeLayer(mapLayers.route); mapLayers.route = null; }
+    if (mapLayers.busMarker) { leafletMap.removeLayer(mapLayers.busMarker); mapLayers.busMarker = null; }
+    mapLayers.stops.forEach(m => leafletMap.removeLayer(m));
+    mapLayers.stops = [];
+}
 
-    L.polyline(route1, { color: '#1d4ed8', weight: 4, opacity: 0.7, dashArray: '8,4' }).addTo(leafletMap);
-    L.polyline(route2, { color: '#059669', weight: 4, opacity: 0.7, dashArray: '8,4' }).addTo(leafletMap);
+function selectBusMap(busNum) {
+    selectedBusMap = busNum;
+    const color = busNum === 1 ? '#1d4ed8' : '#059669';
+    const emoji = busNum === 1 ? '🚌' : '🚍';
+    const cls   = busNum === 1 ? 'b1' : 'b2';
+    const bus   = busData[busNum];
 
-    // Stop markers
-    [1, 2].forEach(busNum => {
-        const color = busNum === 1 ? '#1d4ed8' : '#059669';
-        busData[busNum].stops.forEach((stop, i) => {
-            const isLast = i === busData[busNum].stops.length - 1;
-            const icon = L.divIcon({
-                className: '',
-                html: `<div style="
-                    width:${isLast ? 18 : 12}px;
-                    height:${isLast ? 18 : 12}px;
-                    background:${color};
-                    border:2.5px solid white;
-                    border-radius:50%;
-                    box-shadow:0 2px 6px rgba(0,0,0,0.25);
-                "></div>`,
-                iconSize: [isLast ? 18 : 12, isLast ? 18 : 12],
-                iconAnchor: [isLast ? 9 : 6, isLast ? 9 : 6]
-            });
-            L.marker(stop.latlng, { icon })
-                .addTo(leafletMap)
-                .bindPopup(`<div class="popup-title">${stop.emoji} ${stop.name}</div><div class="popup-sub">Bus ${busNum} • ${stop.dist}</div>`);
-        });
-    });
+    // Update selector buttons
+    document.getElementById('sel-btn-1').className = 'bus-sel-btn' + (busNum === 1 ? ' active-b1' : '');
+    document.getElementById('sel-btn-2').className = 'bus-sel-btn' + (busNum === 2 ? ' active-b2' : '');
 
-    // Animated bus markers
-    [1, 2].forEach(busNum => {
-        const color = busNum === 1 ? '#1d4ed8' : '#059669';
-        const busIcon = L.divIcon({
+    clearMapLayers();
+
+    // Draw route polyline for selected bus only
+    const coords = bus.stops.map(s => s.latlng);
+    mapLayers.route = L.polyline(coords, {
+        color, weight: 5, opacity: 0.78, dashArray: '10,5', lineJoin: 'round'
+    }).addTo(leafletMap);
+
+    // Draw stop markers for selected bus
+    bus.stops.forEach((stop, i) => {
+        const isCurr = i === bus.current;
+        const isDone = i < bus.current;
+        const isLast = i === bus.stops.length - 1;
+        const dotColor = isDone ? '#10b981' : isCurr ? color : '#94a3b8';
+        const size = (isLast || isCurr) ? 18 : 12;
+        const icon = L.divIcon({
             className: '',
-            html: `<div style="
-                font-size:24px;
-                filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-                animation:busFloat 1.5s ease-in-out infinite;
-            ">${busNum === 1 ? '🚌' : '🚍'}</div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
+            html: `<div style="width:${size}px;height:${size}px;background:${dotColor};border:2.5px solid white;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.22);"></div>`,
+            iconSize: [size, size], iconAnchor: [size/2, size/2]
         });
-        const currStop = busData[busNum].stops[busData[busNum].current];
-        busMarkers[busNum] = L.marker(currStop.latlng, { icon: busIcon, zIndexOffset: 1000 })
+        const minOff = (bus.travelMins[i]||0) - (bus.travelMins[bus.current]||0);
+        const status = isDone ? '✓ Passed' : isCurr ? '🔵 Bus is here' : `⏱ ETA: ${getTimeAt(minOff)}`;
+        const m = L.marker(stop.latlng, { icon })
             .addTo(leafletMap)
-            .bindPopup(`<div class="popup-title">Bus ${busNum} — Live</div><div class="popup-sub">📍 ${currStop.name}</div>`);
+            .bindPopup(`<div class="popup-title">${stop.emoji} ${stop.name}</div><div class="popup-sub">Bus ${busNum} • ${stop.dist} • ${status}</div>`);
+        mapLayers.stops.push(m);
     });
 
-    updateMapInfo();
+    // Animated bus emoji marker at current stop
+    const currStop = bus.stops[bus.current];
+    const busIcon = L.divIcon({
+        className: '',
+        html: `<div style="font-size:28px;filter:drop-shadow(0 3px 5px rgba(0,0,0,0.35));">${emoji}</div>`,
+        iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    mapLayers.busMarker = L.marker(currStop.latlng, { icon: busIcon, zIndexOffset: 1000 })
+        .addTo(leafletMap)
+        .bindPopup(`<div class="popup-title">Bus ${busNum} — Live</div><div class="popup-sub">📍 ${currStop.name}</div>`);
+
+    // Fit map to show entire selected bus route
+    leafletMap.fitBounds(mapLayers.route.getBounds(), { padding: [44, 44] });
+
+    // Update info strip below map
+    document.getElementById('map-route-badge').className = 'route-badge ' + cls;
+    document.getElementById('map-route-badge').textContent = emoji + ' Bus ' + busNum;
+    document.getElementById('map-curr-stop').textContent = currStop.name;
+    document.getElementById('map-stops-left').textContent = (bus.stops.length - 1 - bus.current) + ' stops';
 }
 
 function updateMapInfo() {
-    [1, 2].forEach(busNum => {
-        const stop = busData[busNum].stops[busData[busNum].current];
-        const el = document.getElementById('map-bus' + busNum + '-stop');
-        if (el) el.textContent = stop.name;
-        // Move marker
-        if (busMarkers[busNum]) {
-            busMarkers[busNum].setLatLng(stop.latlng);
-            busMarkers[busNum].setPopupContent(`<div class="popup-title">Bus ${busNum} — Live</div><div class="popup-sub">📍 ${stop.name}</div>`);
-        }
-    });
+    if (mapInitialized) selectBusMap(selectedBusMap);
 }
 
 // ── Tracking panel ────────────────────────────────────────
