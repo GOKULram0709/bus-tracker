@@ -518,7 +518,30 @@ function clearMapLayers() {
     mapLayers.stops = [];
 }
 
-function selectBusMap(busNum) {
+async function fetchOsrmRoute(busNum) {
+    const bus = busData[busNum];
+    if (bus.osrmCoords) return bus.osrmCoords; // Use cached route
+    
+    // OSRM uses longitude,latitude format
+    const coordString = bus.stops.map(s => `${s.latlng[1]},${s.latlng[0]}`).join(';');
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordString}?overview=full&geometries=geojson`;
+    
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+            // Convert OSRM [lon, lat] back to Leaflet [lat, lon]
+            bus.osrmCoords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+            return bus.osrmCoords;
+        }
+    } catch (e) {
+        console.error('Routing error:', e);
+    }
+    // Fallback to straight lines if API fails
+    return bus.stops.map(s => s.latlng);
+}
+
+async function selectBusMap(busNum) {
     selectedBusMap = busNum;
     const color = busNum === 1 ? '#1d4ed8' : '#059669';
     const emoji = busNum === 1 ? '🚌' : '🚍';
@@ -531,10 +554,14 @@ function selectBusMap(busNum) {
 
     clearMapLayers();
 
-    // Draw route polyline for selected bus only
-    const coords = bus.stops.map(s => s.latlng);
+    // Draw solid route polyline snapped to real roads
+    const coords = await fetchOsrmRoute(busNum);
+    
+    // Check if we switched buses while fetching
+    if (selectedBusMap !== busNum) return;
+
     mapLayers.route = L.polyline(coords, {
-        color, weight: 5, opacity: 0.78, dashArray: '10,5', lineJoin: 'round'
+        color, weight: 6, opacity: 0.8, lineJoin: 'round'
     }).addTo(leafletMap);
 
     // Draw stop markers for selected bus
