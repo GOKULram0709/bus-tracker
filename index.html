@@ -284,6 +284,23 @@
         .leaflet-popup-content { font-family: 'Poppins', sans-serif !important; font-size: 0.82rem !important; }
         .popup-title { font-weight: 700; color: #1e3a5f; margin-bottom: 2px; }
         .popup-sub { font-size: 0.7rem; color: #64748b; }
+        /* ── Bus 3 and 4 CSS ── */
+        .bus-3 .bus-icon { background: linear-gradient(135deg,#fef08a,#fde047); }
+        .bus-4 .bus-icon { background: linear-gradient(135deg,#fbcfe8,#f9a8d4); }
+        .bus-3 .track-btn { background: linear-gradient(135deg,#ca8a04,#a16207); color: white; box-shadow: 0 4px 16px rgba(202,138,4,0.3); }
+        .bus-4 .track-btn { background: linear-gradient(135deg,#db2777,#be185d); color: white; box-shadow: 0 4px 16px rgba(219,39,119,0.3); }
+        .bus-sel-btn.active-b3 { background: #fef9c3; border-color: #ca8a04; color: #ca8a04; }
+        .bus-sel-btn.active-b4 { background: #fdf2f8; border-color: #db2777; color: #db2777; }
+        .route-badge.b3 { background: #fef9c3; color: #ca8a04; border: 1px solid #fde047; }
+        .route-badge.b4 { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+        .bus-3-panel .stop-dot.here { background: #ca8a04; border-color: #ca8a04; box-shadow: 0 0 0 4px rgba(202,138,4,0.2); }
+        .bus-4-panel .stop-dot.here { background: #db2777; border-color: #db2777; box-shadow: 0 0 0 4px rgba(219,39,119,0.2); }
+        .bus-3-panel .stop-name.here { color: #ca8a04; }
+        .bus-4-panel .stop-name.here { color: #db2777; }
+        .bus-3-panel .here-tag { background: #fef9c3; color: #ca8a04; }
+        .bus-4-panel .here-tag { background: #fdf2f8; color: #db2777; }
+        .bus-3-panel .next-btn { background: linear-gradient(135deg,#ca8a04,#a16207); color: white; box-shadow: 0 4px 16px rgba(202,138,4,0.3); }
+        .bus-4-panel .next-btn { background: linear-gradient(135deg,#db2777,#be185d); color: white; box-shadow: 0 4px 16px rgba(219,39,119,0.3); }
     </style>
 </head>
 <body>
@@ -355,6 +372,44 @@
             </div>
         </div>
 
+        <!-- Bus 3 -->
+        <div class="bus-card bus-3">
+            <div class="card-header">
+                <div class="bus-title">
+                    <div class="bus-icon">🚐</div>
+                    <div>
+                        <div class="bus-name">Bus 3</div>
+                        <div class="bus-route-label">Avadi → Jeppiaar University</div>
+                    </div>
+                </div>
+                <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+            </div>
+            <div class="card-body">
+                <div class="route-strip">🗺️ Avadi → Poonamallee → Porur → Guindy → Thoraipakkam → Jeppiaar University</div>
+                <div class="time-chip">🕐 <span id="clock3">--:--:--</span></div>
+                <button class="track-btn" onclick="openTracking(3)"><span>📡</span><span>Start Tracking</span></button>
+            </div>
+        </div>
+
+        <!-- Bus 4 -->
+        <div class="bus-card bus-4">
+            <div class="card-header">
+                <div class="bus-title">
+                    <div class="bus-icon">🚎</div>
+                    <div>
+                        <div class="bus-name">Bus 4</div>
+                        <div class="bus-route-label">Guduvancheri → Jeppiaar University</div>
+                    </div>
+                </div>
+                <div class="live-badge"><span class="live-dot"></span> LIVE</div>
+            </div>
+            <div class="card-body">
+                <div class="route-strip">🗺️ Guduvancheri → Urapakkam → Vandalur Zoo → Tambaram → Medavakkam → Jeppiaar University</div>
+                <div class="time-chip">🕐 <span id="clock4">--:--:--</span></div>
+                <button class="track-btn" onclick="openTracking(4)"><span>📡</span><span>Start Tracking</span></button>
+            </div>
+        </div>
+
     </div>
 
     <!-- ── MAP TAB ── -->
@@ -363,12 +418,10 @@
             <div class="map-header">
                 <h3>📍 Route Map — Chennai, Tamil Nadu</h3>
                 <div class="bus-selector">
-                    <button class="bus-sel-btn active-b1" id="sel-btn-1" onclick="selectBusMap(1)">
-                        🚌 Bus 1 — Vandalur Route
-                    </button>
-                    <button class="bus-sel-btn" id="sel-btn-2" onclick="selectBusMap(2)">
-                        🚍 Bus 2 — Chengalpattu Route
-                    </button>
+                    <button class="bus-sel-btn active-b1" id="sel-btn-1" onclick="selectBusMap(1)">🚌 Bus 1</button>
+                    <button class="bus-sel-btn" id="sel-btn-2" onclick="selectBusMap(2)">🚍 Bus 2</button>
+                    <button class="bus-sel-btn" id="sel-btn-3" onclick="selectBusMap(3)">🚐 Bus 3</button>
+                    <button class="bus-sel-btn" id="sel-btn-4" onclick="selectBusMap(4)">🚎 Bus 4</button>
                 </div>
             </div>
             <div id="map"></div>
@@ -432,6 +485,50 @@
     </div>
 </div>
 
+<!-- ── Tracking Panel Bus 3 ── -->
+<div class="tracking-overlay" id="overlay3">
+    <div class="tracking-panel bus-3-panel">
+        <div class="panel-handle"></div>
+        <div class="panel-header">
+            <div class="panel-bus-info">
+                <h3>🚐 Bus 3 — Live Tracking</h3>
+                <p>Avadi → Jeppiaar University</p>
+            </div>
+            <button class="panel-close" onclick="closeTracking(3)">✕</button>
+        </div>
+        <div class="status-bar" id="statusbar3"></div>
+        <div class="route-timeline">
+            <div class="timeline-title">Route Stops</div>
+            <div id="timeline3"></div>
+        </div>
+        <div class="panel-action">
+            <button class="next-btn" id="nextbtn3" onclick="nextStop(3)">⏩ Next Stop</button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Tracking Panel Bus 4 ── -->
+<div class="tracking-overlay" id="overlay4">
+    <div class="tracking-panel bus-4-panel">
+        <div class="panel-handle"></div>
+        <div class="panel-header">
+            <div class="panel-bus-info">
+                <h3>🚎 Bus 4 — Live Tracking</h3>
+                <p>Guduvancheri → Jeppiaar University</p>
+            </div>
+            <button class="panel-close" onclick="closeTracking(4)">✕</button>
+        </div>
+        <div class="status-bar" id="statusbar4"></div>
+        <div class="route-timeline">
+            <div class="timeline-title">Route Stops</div>
+            <div id="timeline4"></div>
+        </div>
+        <div class="panel-action">
+            <button class="next-btn" id="nextbtn4" onclick="nextStop(4)">⏩ Next Stop</button>
+        </div>
+    </div>
+</div>
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -459,6 +556,30 @@ const busData = {
         ],
         current: 0,
         travelMins: [0, 28, 50, 62, 75]
+    },
+    3: {
+        stops: [
+            { name: 'Avadi', dist: '0 km', emoji: '🏙️', latlng: [13.1167, 80.1000] },
+            { name: 'Poonamallee', dist: '11 km', emoji: '🛣️', latlng: [13.0473, 80.0945] },
+            { name: 'Porur', dist: '18 km', emoji: '🏘️', latlng: [13.0382, 80.1565] },
+            { name: 'Guindy', dist: '25 km', emoji: '🚦', latlng: [13.0067, 80.2206] },
+            { name: 'Thoraipakkam', dist: '35 km', emoji: '🏢', latlng: [12.9348, 80.2319] },
+            { name: 'Jeppiaar University', dist: '48 km', emoji: '🎓', latlng: [12.8277, 80.2211] }
+        ],
+        current: 0,
+        travelMins: [0, 20, 35, 50, 70, 95]
+    },
+    4: {
+        stops: [
+            { name: 'Guduvancheri', dist: '0 km', emoji: '🚉', latlng: [12.8465, 80.0592] },
+            { name: 'Urapakkam', dist: '4 km', emoji: '🛣️', latlng: [12.8674, 80.0736] },
+            { name: 'Vandalur Zoo', dist: '8 km', emoji: '🦁', latlng: [12.8943, 80.0827] },
+            { name: 'Tambaram', dist: '13 km', emoji: '🏙️', latlng: [12.9249, 80.1000] },
+            { name: 'Medavakkam', dist: '23 km', emoji: '🚦', latlng: [12.9171, 80.1954] },
+            { name: 'Jeppiaar University', dist: '29 km', emoji: '🎓', latlng: [12.8277, 80.2211] }
+        ],
+        current: 0,
+        travelMins: [0, 8, 15, 25, 45, 60]
     }
 };
 
@@ -472,7 +593,7 @@ function getTimeAt(addMins) {
 }
 function updateClocks() {
     const t = getTime();
-    ['main-clock','clock1','clock2'].forEach(id => {
+    ['main-clock','clock1','clock2','clock3','clock4'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = t;
     });
 }
@@ -538,14 +659,21 @@ async function fetchOsrmRoute(busNum) {
 
 async function selectBusMap(busNum) {
     selectedBusMap = busNum;
-    const color = busNum === 1 ? '#1d4ed8' : '#059669';
-    const emoji = busNum === 1 ? '🚌' : '🚍';
-    const cls   = busNum === 1 ? 'b1' : 'b2';
+    
+    const colors = { 1: '#1d4ed8', 2: '#059669', 3: '#ca8a04', 4: '#db2777' };
+    const emojis = { 1: '🚌', 2: '🚍', 3: '🚐', 4: '🚎' };
+    const clses  = { 1: 'b1', 2: 'b2', 3: 'b3', 4: 'b4' };
+    
+    const color = colors[busNum];
+    const emoji = emojis[busNum];
+    const cls   = clses[busNum];
     const bus   = busData[busNum];
 
     // Update selector buttons
-    document.getElementById('sel-btn-1').className = 'bus-sel-btn' + (busNum === 1 ? ' active-b1' : '');
-    document.getElementById('sel-btn-2').className = 'bus-sel-btn' + (busNum === 2 ? ' active-b2' : '');
+    [1, 2, 3, 4].forEach(n => {
+        const btn = document.getElementById(`sel-btn-${n}`);
+        if(btn) btn.className = 'bus-sel-btn' + (busNum === n ? ` active-b${n}` : '');
+    });
 
     clearMapLayers();
 
@@ -661,6 +789,8 @@ function closeTracking(busNum) {
 }
 document.getElementById('overlay1').addEventListener('click', e => { if(e.target===e.currentTarget) closeTracking(1); });
 document.getElementById('overlay2').addEventListener('click', e => { if(e.target===e.currentTarget) closeTracking(2); });
+document.getElementById('overlay3').addEventListener('click', e => { if(e.target===e.currentTarget) closeTracking(3); });
+document.getElementById('overlay4').addEventListener('click', e => { if(e.target===e.currentTarget) closeTracking(4); });
 
 function nextStop(busNum) {
     const bus = busData[busNum];
