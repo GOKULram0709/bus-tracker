@@ -355,9 +355,135 @@
         .dark-theme .user-avatar { border-color: #1e293b; }
         .dark-theme .logout-btn { background: rgba(255,255,255,0.05); color: #cbd5e1; }
         .dark-theme .logout-btn:hover { background: rgba(255,255,255,0.1); }
+        .dark-theme .hamburger { color: #f8fafc !important; }
+
+        /* ── Sidebar & Menu ── */
+        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .sidebar-overlay.active { opacity: 1; pointer-events: auto; }
+        .sidebar { position: fixed; top: 0; left: -300px; width: 280px; height: 100vh; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); z-index: 2001; transition: left 0.3s ease; overflow-y: auto; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.1); }
+        .sidebar.active { left: 0; }
+        .sidebar-header { padding: 24px 20px; background: linear-gradient(135deg, #1d4ed8, #0284c7); color: white; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-header h2 { font-family: 'Poppins', sans-serif; font-size: 1.2rem; font-weight: 700; margin: 0; }
+        .sidebar-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+        .menu-group { padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .menu-group:last-child { border-bottom: none; }
+        .menu-label { padding: 0 20px; font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #1e293b; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: background 0.2s; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+        .menu-item:hover { background: rgba(29,78,216,0.05); color: #1d4ed8; }
+        .menu-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+        .menu-item.danger { color: #ef4444; }
+        .menu-item.danger:hover { background: rgba(239,68,68,0.05); color: #dc2626; }
+        .dark-theme .sidebar { background: rgba(30,41,59,0.95); border-right: 1px solid rgba(255,255,255,0.05); }
+        .dark-theme .menu-group { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dark-theme .menu-item { color: #f8fafc; }
+        .dark-theme .menu-item:hover { background: rgba(255,255,255,0.05); color: #60a5fa; }
+        .dark-theme .menu-label { color: #94a3b8; }
+
+        /* ── Emergency SOS ── */
+        .sos-btn { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 6px 20px rgba(239,68,68,0.4); cursor: pointer; z-index: 1500; transition: all 0.2s; animation: pulse-sos 2s infinite; }
+        .sos-btn:hover { transform: scale(1.1); }
+        @keyframes pulse-sos { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 15px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+        .sos-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2500; display: none; place-items: center; backdrop-filter: blur(5px); }
+        .sos-modal-overlay.active { display: grid; }
+        .sos-modal { width: 90%; max-width: 400px; background: white; border-radius: 20px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .dark-theme .sos-modal { background: #1e293b; color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); }
+        .sos-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; color: #ef4444; }
+        .sos-header h3 { font-family: 'Poppins', sans-serif; font-size: 1.4rem; font-weight: 700; margin: 0; }
+        .sos-list { display: flex; flex-direction: column; gap: 12px; }
+        .sos-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; text-decoration: none; color: #991b1b; font-weight: 600; transition: transform 0.2s; }
+        .dark-theme .sos-item { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+        .sos-item:hover { transform: scale(1.02); }
+        .sos-close { width: 100%; padding: 14px; margin-top: 20px; background: #e2e8f0; color: #475569; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .dark-theme .sos-close { background: #334155; color: #cbd5e1; }
+
+        /* ── Global ETA ── */
+        .global-eta-card { display: flex; align-items: center; gap: 16px; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); border: 1px solid rgba(14,116,189,0.15); border-radius: 16px; padding: 16px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .dark-theme .global-eta-card { background: rgba(30,41,59,0.7); border-color: rgba(255,255,255,0.05); }
+        .eta-icon { font-size: 2rem; }
+        .eta-info h3 { font-family: 'Poppins', sans-serif; font-size: 1rem; color: #1e3a5f; margin-bottom: 4px; }
+        .dark-theme .eta-info h3 { color: #f8fafc; }
+        .eta-info p { font-size: 0.8rem; color: #64748b; font-weight: 600; }
+        .dark-theme .eta-info p { color: #94a3b8; }
+        .eta-time { font-size: 1.4rem; font-weight: 800; color: #10b981; margin-left: auto; }
     </style>
 </head>
 <body>
+
+<!-- Sidebar Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h2>🚌 Menu</h2>
+        <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+    
+    <div class="menu-group">
+        <div class="menu-label">Navigation</div>
+        <button class="menu-item" onclick="toggleSidebar(); switchTab('buses')"><span class="menu-icon">🏠</span> Home</button>
+        <button class="menu-item" onclick="toggleSidebar(); switchTab('map')"><span class="menu-icon">📍</span> Live Tracking</button>
+        <button class="menu-item" onclick="toggleSidebar(); switchTab('buses')"><span class="menu-icon">🚌</span> Routes</button>
+        <button class="menu-item" onclick="comingSoon('Bus Schedule')"><span class="menu-icon">⏰</span> Bus Schedule</button>
+        <button class="menu-item" onclick="comingSoon('Nearby Stops')"><span class="menu-icon">📌</span> Nearby Stops</button>
+        <button class="menu-item" onclick="toggleSidebar(); document.getElementById('busSearch').focus();"><span class="menu-icon">🔍</span> Search Bus</button>
+    </div>
+    
+    <div class="menu-group">
+        <div class="menu-label">Utilities</div>
+        <button class="menu-item" onclick="comingSoon('Favorites')"><span class="menu-icon">⭐</span> Favorites</button>
+        <button class="menu-item" onclick="comingSoon('Trip Planner')"><span class="menu-icon">🗺️</span> Trip Planner</button>
+        <button class="menu-item" onclick="comingSoon('Notifications')"><span class="menu-icon">🔔</span> Notifications</button>
+    </div>
+    
+    <div class="menu-group">
+        <div class="menu-label">Account & System</div>
+        <button class="menu-item" onclick="comingSoon('Profile')"><span class="menu-icon">👤</span> Profile</button>
+        <button class="menu-item" onclick="comingSoon('Settings')"><span class="menu-icon">⚙️</span> Settings</button>
+        <button class="menu-item" onclick="comingSoon('Help & Support')"><span class="menu-icon">❓</span> Help & Support</button>
+        <button class="menu-item" onclick="comingSoon('Feedback')"><span class="menu-icon">💬</span> Feedback</button>
+        <button class="menu-item" onclick="comingSoon('About')"><span class="menu-icon">ℹ️</span> About</button>
+    </div>
+    
+    <div class="menu-group">
+        <button class="menu-item danger" onclick="toggleSidebar(); logout()"><span class="menu-icon">🚪</span> Logout</button>
+    </div>
+</div>
+
+<!-- SOS Button -->
+<button class="sos-btn" onclick="toggleSOS()">🚨</button>
+
+<!-- SOS Modal -->
+<div class="sos-modal-overlay" id="sosModal" onclick="if(event.target===this) toggleSOS()">
+    <div class="sos-modal">
+        <div class="sos-header">
+            <span style="font-size:2rem;">🆘</span>
+            <h3>Emergency Contacts</h3>
+        </div>
+        <div class="sos-list">
+            <a href="tel:100" class="sos-item">
+                <div>
+                    <div style="font-size:0.9rem;">Police Control Room</div>
+                    <div style="font-size:1.1rem;">100</div>
+                </div>
+                <span>📞 Call</span>
+            </a>
+            <a href="tel:108" class="sos-item">
+                <div>
+                    <div style="font-size:0.9rem;">Ambulance</div>
+                    <div style="font-size:1.1rem;">108</div>
+                </div>
+                <span>📞 Call</span>
+            </a>
+            <a href="tel:9999999999" class="sos-item">
+                <div>
+                    <div style="font-size:0.9rem;">Campus Security</div>
+                    <div style="font-size:1.1rem;">+91 99999 99999</div>
+                </div>
+                <span>📞 Call</span>
+            </a>
+        </div>
+        <button class="sos-close" onclick="toggleSOS()">Close</button>
+    </div>
+</div>
 
 <canvas id="bg"></canvas>
 <div class="orb orb-1"></div>
@@ -450,11 +576,14 @@
     
     <!-- User Bar -->
     <div class="user-bar">
-        <div class="user-info">
-            <div class="user-avatar" id="appAvatar">👨‍🎓</div>
-            <div class="user-details">
-                <h4 id="appName">John Doe</h4>
-                <p id="appDept">B.Tech IT</p>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <button style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#1e3a5f;" class="hamburger" onclick="toggleSidebar()">☰</button>
+            <div class="user-info">
+                <div class="user-avatar" id="appAvatar">👨‍🎓</div>
+                <div class="user-details">
+                    <h4 id="appName">John Doe</h4>
+                    <p id="appDept">B.Tech IT</p>
+                </div>
             </div>
         </div>
         <div style="display:flex; gap:8px;">
@@ -477,6 +606,16 @@
 
     <!-- Clock bar -->
     <div class="clock-bar">🕐 <span id="main-clock">--:--:--</span></div>
+
+    <!-- Global ETA Card -->
+    <div class="global-eta-card">
+        <div class="eta-icon">⏱️</div>
+        <div class="eta-info">
+            <h3>Nearest Arrival</h3>
+            <p id="globalEtaBus">Calculating...</p>
+        </div>
+        <div class="eta-time" id="globalEtaTime">--:--</div>
+    </div>
 
     <!-- Tab Navigation -->
     <div class="tab-nav">
@@ -760,9 +899,55 @@ function updateClocks() {
     ['main-clock','clock1','clock2','clock3','clock4'].forEach(id => {
         const el = document.getElementById(id); if (el) el.textContent = t;
     });
+    calculateGlobalETA();
 }
+
+function calculateGlobalETA() {
+    let nearestMins = Infinity;
+    let nearestBus = null;
+    
+    for(let i=1; i<=4; i++) {
+        const bus = busData[i];
+        if(bus.current < bus.stops.length - 1) {
+            const minsLeft = bus.travelMins[bus.stops.length - 1] - (bus.travelMins[bus.current] || 0);
+            if(minsLeft < nearestMins) {
+                nearestMins = minsLeft;
+                nearestBus = i;
+            }
+        }
+    }
+    
+    const busEl = document.getElementById('globalEtaBus');
+    const timeEl = document.getElementById('globalEtaTime');
+    if (busEl && timeEl) {
+        if(nearestBus) {
+            busEl.innerText = `Bus ${nearestBus} is arriving soonest`;
+            timeEl.innerText = getTimeAt(nearestMins);
+        } else {
+            busEl.innerText = `All buses arrived`;
+            timeEl.innerText = '--:--';
+        }
+    }
+}
+
 setInterval(updateClocks, 1000);
 updateClocks();
+
+// ── Sidebar & SOS ──────────────────────────────────────────
+function toggleSidebar() {
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+    document.getElementById('sidebar').classList.toggle('active');
+}
+
+function toggleSOS() {
+    document.getElementById('sosModal').classList.toggle('active');
+}
+
+function comingSoon(feature) {
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.getElementById('sidebar').classList.remove('active');
+    alert(`The "${feature}" feature is currently under development and will be available soon!`);
+}
 
 // ── Tab switch ────────────────────────────────────────────
 let mapInitialized = false;
