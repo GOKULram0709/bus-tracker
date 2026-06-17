@@ -437,7 +437,7 @@
     <div class="menu-group">
         <div class="menu-label">Account & System</div>
         <button class="menu-item" onclick="comingSoon('Profile')"><span class="menu-icon">👤</span> Profile</button>
-        <button class="menu-item" onclick="comingSoon('Settings')"><span class="menu-icon">⚙️</span> Settings</button>
+        <button class="menu-item" onclick="toggleSidebar(); openSettings()"><span class="menu-icon">⚙️</span> Settings</button>
         <button class="menu-item" onclick="comingSoon('Help & Support')"><span class="menu-icon">❓</span> Help & Support</button>
         <button class="menu-item" onclick="comingSoon('Feedback')"><span class="menu-icon">💬</span> Feedback</button>
         <button class="menu-item" onclick="comingSoon('About')"><span class="menu-icon">ℹ️</span> About</button>
@@ -482,6 +482,23 @@
             </a>
         </div>
         <button class="sos-close" onclick="toggleSOS()">Close</button>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="sos-modal-overlay" id="settingsModal" onclick="if(event.target===this) closeSettings()">
+    <div class="sos-modal">
+        <div class="sos-header" style="background: linear-gradient(135deg, #475569, #1e293b);">
+            <span style="font-size:2rem;">⚙️</span>
+            <h3>Settings</h3>
+        </div>
+        <div class="sos-list" style="padding: 20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <div style="font-weight: 600;">Dark Mode</div>
+                <button class="logout-btn" onclick="toggleDarkMode()" id="darkModeBtnSettings" style="font-size:1.5rem; padding: 4px 12px; border-radius: 12px;">🌙</button>
+            </div>
+            <button class="save-btn" onclick="closeSettings()" style="width: 100%;">Close</button>
+        </div>
     </div>
 </div>
 
@@ -587,8 +604,7 @@
             </div>
         </div>
         <div style="display:flex; gap:8px;">
-            <button class="logout-btn" onclick="toggleDarkMode()" id="darkModeBtn">🌙</button>
-            <button class="logout-btn" onclick="logout()">Sign Out</button>
+            <span id="darkModeBadge" style="font-size:1.1rem; display:none;">🌙</span>
         </div>
     </div>
 
@@ -943,6 +959,14 @@ function toggleSOS() {
     document.getElementById('sosModal').classList.toggle('active');
 }
 
+function openSettings() {
+    document.getElementById('settingsModal').classList.add('active');
+}
+
+function closeSettings() {
+    document.getElementById('settingsModal').classList.remove('active');
+}
+
 function comingSoon(feature) {
     document.getElementById('sidebarOverlay').classList.remove('active');
     document.getElementById('sidebar').classList.remove('active');
@@ -1164,7 +1188,7 @@ let currentAvatar = '👨‍🎓';
 function checkAuth() {
     if(localStorage.getItem('jeppiaarBusDark') === 'true') {
         document.body.classList.add('dark-theme');
-        const btn = document.getElementById('darkModeBtn');
+        const btn = document.getElementById('darkModeBtnSettings');
         if(btn) btn.innerText = '☀️';
     }
 
@@ -1247,7 +1271,8 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark-theme');
     const isDark = document.body.classList.contains('dark-theme');
     localStorage.setItem('jeppiaarBusDark', isDark);
-    document.getElementById('darkModeBtn').innerText = isDark ? '☀️' : '🌙';
+    const btn = document.getElementById('darkModeBtnSettings');
+    if (btn) btn.innerText = isDark ? '☀️' : '🌙';
     
     if(leafletMap) {
         leafletMap.eachLayer(layer => { if(layer instanceof L.TileLayer) leafletMap.removeLayer(layer); });
